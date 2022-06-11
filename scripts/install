@@ -29,8 +29,6 @@ domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
 admin=$YNH_APP_ARG_ADMIN
-email=$(ynh_user_get_info --username=$admin --key=mail)
-password=$YNH_APP_ARG_PASSWORD
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -111,20 +109,6 @@ ynh_add_fpm_config
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
-# MODIFY A CONFIG FILE
-#=================================================
-
-# # Adding the details of the database to the config file
-# ynh_add_config --template="../conf/config.ini.php" --destination="$final_path/data/config.ini.php"
-
-# # Load initial SQL into the new database
-# ynh_mysql_connect_as --user="$db_user" --password="$db_pwd" --database="$db_name" < "../conf/sql/webtrees.sql"
-
-# ynh_add_config --template="../conf/sql/admin.sql" --destination="/var/tmp/admin.sql"
-# ynh_mysql_connect_as --user="$db_user" --password="$db_pwd" --database="$db_name" < "/var/tmp/admin.sql"
-# ynh_secure_remove --file="/var/tmp/admin.sql"
-
-#=================================================
 # SETUP SSOWAT
 #=================================================
 ynh_script_progression --message="Configuring permissions..."
@@ -141,6 +125,26 @@ fi
 ynh_script_progression --message="Reloading NGINX web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+ynh_script_progression --message="Sending a readme for the admin..." --weight=1
+
+echo "Webtrees was successfully installed :)
+
+Please open your $app domain: https://$domain$path_url
+
+Complete the registration process from the wizard page displayed.
+Details for MySQL database to be enterted while registration process:
+
+Database login:    $db_user
+Database name:     $db_name
+Database password: $db_pwd
+
+If you are facing any problem or want to improve this app, please open a new issue here: https://github.com/YunoHost-Apps/webtrees_ynh/issues" > mail_to_send
+
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin" --type=install
 
 #=================================================
 # END OF SCRIPT

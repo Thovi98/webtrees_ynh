@@ -53,10 +53,6 @@
             {
                 "name": "admin",
                 "type": "user"
-            },
-            {
-                "name": "password",
-                "type": "password"
             }
         ]
     }
